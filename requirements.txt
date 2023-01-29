@@ -1,0 +1,2 @@
+git+https://github.com/marosg42/TapoP100.git#egg=pyp100
+influxdb
