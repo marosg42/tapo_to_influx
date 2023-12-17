@@ -1,0 +1,13 @@
+- job:
+    name: tapo_to_influx
+    triggers:
+        - timed: H 6 * * *
+    properties:
+      - build-discarder:
+          days-to-keep: 365
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+            ssh -o StrictHostKeyChecking=no -i ${DOCKER_KEY} ubuntu@${DOCKER_IP} -- docker run --name tapo_to_influx --rm --env-file /home/ubuntu/shared/env-file marosg/tapo_to_influx $(date +"%Y-%m-%d")
+
