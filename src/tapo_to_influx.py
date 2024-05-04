@@ -3,8 +3,10 @@ import os
 import requests
 import sys
 
+from enum import IntEnum
 from influxdb import InfluxDBClient
-from PyP100 import PyP110
+from PyP100 import PyP110, MeasureInterval
+
 
 which_day = [int(i) for i in sys.argv[1].split("-")]
 start_timestamp = int(datetime.datetime(*which_day).timestamp())
@@ -18,19 +20,26 @@ ips = os.environ["TAPO_IPS"].split()
 
 data = []
 for ip in ips:
+    print(f"Processing {ip}")
     plug = PyP110.P110(ip, os.environ["TPLINK_LOGIN"], os.environ["TPLINK_PASSWORD"])
     try:
         plug.handshake()
-    except KeyError:
-        print("KeyError for " + ip)
     except requests.exceptions.ConnectTimeout as e:
         print(e)
         continue
+    except Exception as e:
+        if "Failed to initialize protocol" in str(e):
+            print(f"Failed to initialize protocol for {ip}")
+            continue
+        else:
+            raise (e)
     plug.login()
     name = plug.getDeviceName()
-
+    print(f"Device name with {ip} is {name}")
     for hour, value in enumerate(
-        plug.getEnergyData(start_timestamp, end_timestamp, 60)["result"]["data"]
+        plug.getEnergyData(start_timestamp, end_timestamp, MeasureInterval.HOURS)[
+            "data"
+        ]
     ):
         timestamp = int(datetime.datetime(*which_day, hour, 59).timestamp())
         data.append(f"usage,name={name} value={value} {timestamp}")
