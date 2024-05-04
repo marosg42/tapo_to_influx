@@ -18,7 +18,11 @@ ips = os.environ["TAPO_IPS"].split()
 data = []
 for ip in ips:
     plug = PyP110.P110(ip, os.environ["TPLINK_LOGIN"], os.environ["TPLINK_PASSWORD"])
-    plug.handshake()
+    try:
+        plug.handshake()
+    except KeyError:
+        print("KeyError for " + ip)
+        continue
     plug.login()
     name = plug.getDeviceName()
 
