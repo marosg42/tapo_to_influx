@@ -1,5 +1,6 @@
 import datetime
 import os
+import requests
 import sys
 
 from influxdb import InfluxDBClient
@@ -22,6 +23,8 @@ for ip in ips:
         plug.handshake()
     except KeyError:
         print("KeyError for " + ip)
+    except requests.exceptions.ConnectTimeout as e:
+        print(e)
         continue
     plug.login()
     name = plug.getDeviceName()
